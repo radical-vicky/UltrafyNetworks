@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Menu, X, ArrowRight, Wifi, Zap, Crown } from "lucide-react";
+import { Menu, X, ArrowRight, Wifi } from "lucide-react";
 
 const navLinks = [
   {
@@ -23,19 +23,19 @@ const navLinks = [
   },
 ];
 
-// Package data from your flyer
+// Updated packages to match your offerings
 export const packages = [
   { 
-    speed: "8", 
-    price: "999", 
+    speed: "5", 
+    price: "1,000", 
     originalPrice: "1,500",
-    accent: "from-green-500 to-emerald-400",
+    accent: "from-emerald-500 to-emerald-400",
     icon: Wifi,
     popular: false,
     tag: "Starter"
   },
   { 
-    speed: "15", 
+    speed: "8", 
     price: "1,500", 
     originalPrice: "2,000",
     accent: "from-blue-500 to-cyan-400",
@@ -44,11 +44,20 @@ export const packages = [
     tag: "Most Popular"
   },
   { 
-    speed: "50", 
-    price: "4,000", 
-    originalPrice: "5,000",
+    speed: "15", 
+    price: "2,000", 
+    originalPrice: "2,500",
     accent: "from-purple-500 to-violet-400",
-    icon: Crown,
+    icon: Wifi,
+    popular: false,
+    tag: "Standard"
+  },
+  { 
+    speed: "30", 
+    price: "3,000", 
+    originalPrice: "4,000",
+    accent: "from-orange-500 to-amber-400",
+    icon: Wifi,
     popular: false,
     tag: "Premium"
   },
@@ -57,7 +66,6 @@ export const packages = [
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [showPackages, setShowPackages] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -84,6 +92,21 @@ export default function Navbar() {
     };
   }, [mobileOpen]);
 
+  // Handle smooth scroll for anchor links
+  const handleSmoothScroll = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    if (href.startsWith("#")) {
+      e.preventDefault();
+      const targetId = href.replace("#", "");
+      const element = document.getElementById(targetId);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth" });
+        setMobileOpen(false);
+      }
+    } else {
+      setMobileOpen(false);
+    }
+  };
+
   return (
     <>
       <header
@@ -93,20 +116,20 @@ export default function Navbar() {
             : "bg-gradient-to-b from-blue-950/90 to-transparent"
         }`}
       >
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="flex h-20 items-center justify-between">
-            {/* Logo - Updated to UltrafyFiberNet */}
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex h-16 sm:h-20 items-center justify-between">
+            {/* Logo */}
             <Link
               href="/"
-              className="flex items-center gap-3 group"
+              className="flex items-center gap-2 sm:gap-3 group flex-shrink-0"
             >
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-blue-700 text-white font-bold shadow-lg transition-transform duration-300 group-hover:scale-105 text-[10px] leading-tight text-center">
+              <div className="flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-xl sm:rounded-2xl bg-gradient-to-br from-blue-600 to-blue-700 text-white font-bold shadow-lg transition-transform duration-300 group-hover:scale-105 text-[8px] sm:text-[10px] leading-tight text-center">
                 UFN
               </div>
 
-              <div className="hidden sm:block">
+              <div className="hidden xs:block">
                 <h1
-                  className={`font-bold text-lg transition-colors duration-300 ${
+                  className={`font-bold text-sm sm:text-lg transition-colors duration-300 ${
                     isScrolled
                       ? "text-gray-900"
                       : "text-white"
@@ -116,10 +139,10 @@ export default function Navbar() {
                 </h1>
 
                 <p
-                  className={`text-xs transition-colors duration-300 ${
+                  className={`text-[10px] sm:text-xs transition-colors duration-300 ${
                     isScrolled
                       ? "text-gray-500"
-                      : "text-gray-200"
+                      : "text-gray-300"
                   }`}
                 >
                   Fast • Reliable • Unlimited
@@ -128,11 +151,12 @@ export default function Navbar() {
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center gap-8">
+            <nav className="hidden md:flex items-center gap-6 lg:gap-8">
               {navLinks.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
+                  onClick={(e) => handleSmoothScroll(e, link.href)}
                   className={`font-medium transition-colors duration-300 hover:text-blue-600 ${
                     isScrolled
                       ? "text-gray-700"
@@ -145,38 +169,40 @@ export default function Navbar() {
             </nav>
 
             {/* Desktop CTA */}
-            <div className="hidden md:flex items-center gap-4">
-              <Link
+            <div className="hidden md:flex items-center gap-3 lg:gap-4">
+              <a
                 href="tel:0700541561"
-                className={`inline-flex items-center gap-2 rounded-2xl px-5 py-3 text-sm font-semibold transition-all duration-300 ${
+                className={`inline-flex items-center gap-2 rounded-xl px-3 lg:px-5 py-2 lg:py-3 text-xs lg:text-sm font-semibold transition-all duration-300 ${
                   isScrolled
                     ? "text-blue-600 hover:bg-blue-50"
                     : "text-white hover:bg-white/10"
                 }`}
               >
-                📞 0700 541 561
-              </Link>
-              <Link
+                <Phone className="w-3 h-3 lg:w-4 lg:h-4" />
+                0700 541 561
+              </a>
+              <a
                 href="#contact"
-                className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-blue-700 px-5 py-3 text-sm font-semibold text-white shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5"
+                onClick={(e) => handleSmoothScroll(e, "#contact")}
+                className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 px-4 lg:px-5 py-2 lg:py-3 text-xs lg:text-sm font-semibold text-white shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5"
               >
                 Get Connected
-                <ArrowRight className="h-4 w-4" />
-              </Link>
+                <ArrowRight className="h-3 w-3 lg:h-4 lg:w-4" />
+              </a>
             </div>
 
             {/* Mobile Menu Button */}
             <button
               type="button"
               onClick={() => setMobileOpen(true)}
-              className={`md:hidden rounded-xl p-2 transition-colors duration-300 ${
+              className={`md:hidden rounded-xl p-1.5 sm:p-2 transition-colors duration-300 ${
                 isScrolled
                   ? "text-gray-900 hover:bg-gray-100"
                   : "text-white hover:bg-white/10"
               }`}
               aria-label="Open Menu"
             >
-              <Menu className="h-7 w-7" />
+              <Menu className="h-6 w-6 sm:h-7 sm:w-7" />
             </button>
           </div>
         </div>
@@ -204,23 +230,23 @@ export default function Navbar() {
               : "translate-x-full"
           }`}
         >
-          {/* Drawer Header - Updated */}
-          <div className="flex items-center justify-between border-b border-gray-100 px-6 py-5">
+          {/* Drawer Header */}
+          <div className="flex items-center justify-between border-b border-gray-100 px-4 sm:px-6 py-4 sm:py-5">
             <Link
               href="/"
               onClick={() => setMobileOpen(false)}
-              className="flex items-center gap-3"
+              className="flex items-center gap-2 sm:gap-3"
             >
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-blue-700 text-white font-bold text-[10px] leading-tight text-center">
+              <div className="flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-xl sm:rounded-2xl bg-gradient-to-br from-blue-600 to-blue-700 text-white font-bold text-[8px] sm:text-[10px] leading-tight text-center">
                 UFN
               </div>
 
               <div>
-                <h2 className="font-bold text-gray-900">
+                <h2 className="font-bold text-sm sm:text-base text-gray-900">
                   UltrafyFiberNet
                 </h2>
 
-                <p className="text-xs text-gray-500">
+                <p className="text-[10px] sm:text-xs text-gray-500">
                   Fast • Reliable
                 </p>
               </div>
@@ -229,74 +255,78 @@ export default function Navbar() {
             <button
               type="button"
               onClick={() => setMobileOpen(false)}
-              className="rounded-xl p-2 text-gray-600 hover:bg-gray-100"
+              className="rounded-xl p-1.5 sm:p-2 text-gray-600 hover:bg-gray-100"
               aria-label="Close Menu"
             >
-              <X className="h-6 w-6" />
+              <X className="h-5 w-5 sm:h-6 sm:w-6" />
             </button>
           </div>
 
           {/* Drawer Navigation */}
-          <div className="flex flex-col px-6 py-8">
+          <div className="flex flex-col px-4 sm:px-6 py-6 sm:py-8 overflow-y-auto" style={{ maxHeight: "calc(100% - 120px)" }}>
             {navLinks.map((link) => (
-              <Link
+              <a
                 key={link.href}
                 href={link.href}
-                onClick={() => setMobileOpen(false)}
-                className="rounded-2xl px-4 py-4 text-lg font-medium text-gray-700 transition hover:bg-gray-100 hover:text-blue-600"
+                onClick={(e) => handleSmoothScroll(e, link.href)}
+                className="rounded-xl px-4 py-3.5 sm:py-4 text-base sm:text-lg font-medium text-gray-700 transition hover:bg-gray-100 hover:text-blue-600"
               >
                 {link.label}
-              </Link>
+              </a>
             ))}
 
             {/* Packages Display in Mobile */}
-            <div className="mt-4 rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100 p-4">
-              <h3 className="text-sm font-semibold text-blue-900 mb-3">🔥 Hot Packages</h3>
+            <div className="mt-4 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 p-3 sm:p-4">
+              <h3 className="text-xs sm:text-sm font-semibold text-blue-900 mb-2 sm:mb-3">
+                Our Packages
+              </h3>
               {packages.map((pkg, i) => (
-                <div key={i} className="flex items-center justify-between py-2 border-b border-blue-200/50 last:border-0">
+                <div key={i} className="flex items-center justify-between py-1.5 sm:py-2 border-b border-blue-200/50 last:border-0">
                   <div className="flex items-center gap-2">
-                    <pkg.icon className="h-4 w-4 text-blue-600" />
-                    <span className="font-medium text-gray-900">{pkg.speed} Mbps</span>
+                    <Wifi className="h-3 w-3 sm:h-4 sm:w-4 text-blue-600" />
+                    <span className="font-medium text-sm sm:text-base text-gray-900">{pkg.speed} Mbps</span>
                   </div>
-                  <div>
-                    <span className="font-bold text-blue-600">KSh {pkg.price}</span>
-                    <span className="text-xs text-gray-500 line-through ml-2">KSh {pkg.originalPrice}</span>
+                  <div className="flex items-center gap-1 sm:gap-2">
+                    <span className="font-bold text-blue-600 text-sm sm:text-base">KSh {pkg.price}</span>
+                    <span className="text-[10px] sm:text-xs text-gray-500 line-through">KSh {pkg.originalPrice}</span>
                   </div>
                 </div>
               ))}
-              <p className="text-xs text-blue-700 mt-2">* Limited time offer</p>
+              <p className="text-[10px] sm:text-xs text-blue-700 mt-1 sm:mt-2">
+                * 1 Month Free After Installation
+              </p>
             </div>
 
             {/* Mobile CTA */}
-            <Link
+            <a
               href="#contact"
-              onClick={() => setMobileOpen(false)}
-              className="mt-6 inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-blue-700 px-5 py-4 font-semibold text-white shadow-lg transition hover:shadow-xl"
+              onClick={(e) => handleSmoothScroll(e, "#contact")}
+              className="mt-4 sm:mt-6 inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 px-5 py-3.5 sm:py-4 font-semibold text-white shadow-lg transition hover:shadow-xl text-sm sm:text-base"
             >
               Get Connected
               <ArrowRight className="h-4 w-4" />
-            </Link>
+            </a>
 
-            <div className="mt-4 flex items-center justify-center gap-4 text-sm">
+            <div className="mt-3 sm:mt-4 flex items-center justify-center gap-3 sm:gap-4 text-xs sm:text-sm">
               <a href="tel:0700541561" className="text-blue-600 font-medium">
-                📞 0700 541 561
+                Call 0700 541 561
               </a>
               <span className="text-gray-300">|</span>
               <a href="tel:0703199691" className="text-blue-600 font-medium">
-                0703 199 691
+                WhatsApp 0703 199 691
               </a>
             </div>
           </div>
 
           {/* Footer */}
-          <div className="absolute bottom-0 left-0 right-0 border-t border-gray-100 px-6 py-5">
-            <p className="text-sm text-gray-500">
+          <div className="absolute bottom-0 left-0 right-0 border-t border-gray-100 px-4 sm:px-6 py-4 sm:py-5 bg-white">
+            <p className="text-xs sm:text-sm text-gray-500">
               Monday – Saturday
             </p>
-            <p className="font-medium text-gray-900">
+            <p className="font-medium text-gray-900 text-sm sm:text-base">
               8:00 AM – 5:00 PM
             </p>
-            <p className="mt-2 text-sm text-blue-600 font-medium">
+            <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-blue-600 font-medium">
               24/7 Technical Support Available
             </p>
           </div>
@@ -304,4 +334,4 @@ export default function Navbar() {
       </div>
     </>
   );
-      }
+}
