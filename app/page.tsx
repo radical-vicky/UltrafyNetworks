@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import { Phone, Wifi, Zap, ShieldCheck, Headset, MapPin, Star, ChevronRight } from 'lucide-react';
+import { Phone, Wifi, Zap, ShieldCheck, Headset, MapPin, Star, ChevronRight, Check } from 'lucide-react';
 
 export default function Home() {
   return (
@@ -18,7 +18,7 @@ export default function Home() {
 
             <div className="space-y-6 sm:space-y-8">
               <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/30 rounded-full px-3 sm:px-4 py-1.5">
-                <span className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse" />
+                <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
                 <span className="text-xs sm:text-sm font-medium tracking-wide">Now live in Thika</span>
               </div>
 
@@ -34,23 +34,32 @@ export default function Home() {
                 Premium fibre internet built for Thika homes and businesses. No buffering, no excuses — just fast, dependable connection your whole family can count on.
               </p>
 
+              {/* Offer Banner */}
+              <div className="bg-yellow-400/20 backdrop-blur-md border border-yellow-400/30 rounded-2xl px-4 sm:px-6 py-3 sm:py-4 text-center">
+                <p className="text-yellow-200 font-bold text-sm sm:text-base">
+                  🎉 SPECIAL OFFER: Get 1 Month Free After Installation
+                </p>
+                <p className="text-blue-100 text-xs sm:text-sm mt-1">Limited time offer — available for all packages</p>
+              </div>
+
               {/* Packages - Mobile Responsive Grid */}
-              <div className="grid grid-cols-3 gap-2 sm:gap-4 pt-2 sm:pt-4">
+              <div className="grid grid-cols-4 gap-2 sm:gap-4 pt-2 sm:pt-4">
                 {[
-                  { speed: "8", price: "1,500", accent: "from-green-500 to-emerald-400" },
+                  { speed: "8", price: "1,000", accent: "from-emerald-500 to-emerald-400" },
                   { speed: "15", price: "2,000", accent: "from-blue-500 to-cyan-400" },
                   { speed: "30", price: "3,000", accent: "from-purple-500 to-violet-400" },
+                  { speed: "50", price: "4,000", accent: "from-orange-500 to-amber-400" },
                 ].map((pkg, i) => (
                   <div
                     key={i}
-                    className="bg-white/10 backdrop-blur-md border border-white/30 rounded-2xl sm:rounded-3xl p-3 sm:p-5 text-center hover:scale-105 hover:bg-white/15 transition-all duration-300"
+                    className="bg-white/10 backdrop-blur-md border border-white/30 rounded-2xl sm:rounded-3xl p-2 sm:p-5 text-center hover:scale-105 hover:bg-white/15 transition-all duration-300"
                   >
-                    <div className={`text-2xl sm:text-4xl font-extrabold bg-gradient-to-br ${pkg.accent} bg-clip-text text-transparent`}>
+                    <div className={`text-lg sm:text-4xl font-extrabold bg-gradient-to-br ${pkg.accent} bg-clip-text text-transparent`}>
                       {pkg.speed}
                     </div>
-                    <div className="text-[10px] sm:text-sm text-white/70 -mt-1">Mbps</div>
-                    <div className="mt-1 sm:mt-3 text-base sm:text-2xl font-bold">KSh {pkg.price}</div>
-                    <div className="text-[8px] sm:text-xs text-white/60">per month</div>
+                    <div className="text-[8px] sm:text-sm text-white/70 -mt-1">Mbps</div>
+                    <div className="mt-1 sm:mt-3 text-sm sm:text-2xl font-bold">KSh {pkg.price}</div>
+                    <div className="text-[7px] sm:text-xs text-white/60">per month</div>
                   </div>
                 ))}
               </div>
@@ -126,8 +135,8 @@ export default function Home() {
 
             {[
               { step: "1", title: "Check coverage", desc: "Tell us your location in Thika and we'll confirm if your home or business is within our fibre zone." },
-              { step: "2", title: "Pick a package", desc: "Choose the speed that fits your household, from 8 Mbps starter plans to 30 Mbps for heavy streaming and gaming." },
-              { step: "3", title: "We install for free", desc: "Our technician sets up your router and runs the line — most installs take under two hours." },
+              { step: "2", title: "Pick a package", desc: "Choose the speed that fits your household, from 8 Mbps starter plans to 50 Mbps for heavy streaming and gaming." },
+              { step: "3", title: "We install for free", desc: "Our technician sets up your router and runs the line — most installs take under two hours. Plus, get 1 month free!" },
             ].map((item, i) => (
               <div key={i} className="relative bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-100">
                 <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-blue-950 text-yellow-400 font-extrabold text-base sm:text-lg flex items-center justify-center mb-4 sm:mb-5 relative z-10">
@@ -213,6 +222,7 @@ export default function Home() {
           <div className="space-y-3 sm:space-y-4">
             {[
               { q: "Is installation really free?", a: "Yes. Once you're within our Thika coverage zone, our technician installs your router and runs the fibre line at no extra cost." },
+              { q: "Do I really get 1 month free?", a: "Yes! All new customers who sign up get their first month absolutely free after installation. This applies to all our packages." },
               { q: "Can I upgrade my package later?", a: "Anytime. Call or WhatsApp us and we'll switch your plan before your next billing cycle." },
               { q: "What happens if I have an outage?", a: "Our network is monitored continuously. Report it through the support line and a technician is dispatched the same day for on-site issues." },
               { q: "Do you offer business packages?", a: "Yes, we work with shops, offices, and cyber cafes in Thika on custom plans — contact us for pricing." },
@@ -248,14 +258,17 @@ export default function Home() {
               Call 0700 541 561
             </a>
             <a
-              href="https://wa.me/254700541561"
+              href="https://wa.me/254703199691"
               className="border-2 border-white/80 hover:border-white font-semibold px-6 sm:px-8 py-3 sm:py-4 rounded-full text-sm sm:text-lg hover:bg-white/10 transition-all duration-300"
             >
               Chat on WhatsApp
             </a>
           </div>
+          <p className="text-blue-200 text-xs sm:text-sm mt-4">
+            WhatsApp: 0703 199 691
+          </p>
         </div>
       </section>
     </div>
   );
-}
+                  }
