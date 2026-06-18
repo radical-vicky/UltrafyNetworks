@@ -27,7 +27,7 @@ const otherServices = [
     title: "Solar panel installation",
     desc: "Design and installation of solar systems sized to your home or business power needs, with battery backup options.",
     color: "bg-amber-500",
-    image: "https://images.unsplash.com/photo-1509391366360-2e959784a276?w=800&h=600&fit=crop",
+    image: "https://images.unsplash.com/photo-1509391366360-2e959784a276?w=600&h=400&fit=crop",
     features: ["Solar panel installation", "Battery backup systems", "System design", "Grid-tied solutions", "Off-grid systems"]
   },
   {
@@ -35,7 +35,7 @@ const otherServices = [
     title: "Electrical installation",
     desc: "Full house and commercial wiring, fault diagnosis, and certified electrical work done to code.",
     color: "bg-yellow-500",
-    image: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=800&h=600&fit=crop",
+    image: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=600&h=400&fit=crop",
     features: ["House wiring", "Commercial wiring", "Fault diagnosis", "Certified work", "Safety compliance"]
   },
   {
@@ -43,7 +43,7 @@ const otherServices = [
     title: "CCTV installation",
     desc: "Indoor and outdoor camera systems with remote viewing on your phone, sized for homes, shops, or compounds.",
     color: "bg-slate-700",
-    image: "https://images.unsplash.com/photo-1558002038-1055907df827?w=800&h=600&fit=crop",
+    image: "https://images.unsplash.com/photo-1558002038-1055907df827?w=600&h=400&fit=crop",
     features: ["HD cameras", "Remote viewing", "Night vision", "Indoor/outdoor", "24/7 monitoring"]
   },
   {
@@ -51,7 +51,7 @@ const otherServices = [
     title: "Electric fence installation",
     desc: "Perimeter security fencing with shock deterrent and alarm integration for homes and commercial premises.",
     color: "bg-red-600",
-    image: "https://images.unsplash.com/photo-1582139329536-e7284fece509?w=800&h=600&fit=crop",
+    image: "https://images.unsplash.com/photo-1582139329536-e7284fece509?w=600&h=400&fit=crop",
     features: ["Perimeter security", "Shock deterrent", "Alarm integration", "Commercial premises", "Home security"]
   },
   {
@@ -59,7 +59,7 @@ const otherServices = [
     title: "Fire alarm systems",
     desc: "Smoke and heat detection systems with audible alerts, installed and tested to meet safety requirements.",
     color: "bg-orange-600",
-    image: "https://images.unsplash.com/photo-1562311701-58c0a0f0b218?w=800&h=600&fit=crop",
+    image: "https://images.unsplash.com/photo-1562311701-58c0a0f0b218?w=600&h=400&fit=crop",
     features: ["Smoke detection", "Heat detection", "Audible alerts", "Safety compliance", "System testing"]
   },
   {
@@ -67,7 +67,7 @@ const otherServices = [
     title: "Burglar alarm systems",
     desc: "Motion-sensor and entry alarms with optional monitoring, giving you alerts the moment something's wrong.",
     color: "bg-blue-700",
-    image: "https://images.unsplash.com/photo-1558002038-1055907df827?w=800&h=600&fit=crop",
+    image: "https://images.unsplash.com/photo-1558002038-1055907df827?w=600&h=400&fit=crop",
     features: ["Motion sensors", "Entry alarms", "Remote monitoring", "Instant alerts", "24/7 protection"]
   },
   {
@@ -75,7 +75,7 @@ const otherServices = [
     title: "Access Points Installation",
     desc: "Extend your network coverage with professional access point installation. Perfect for offices, hotels, and large homes.",
     color: "bg-cyan-600",
-    image: "https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=800&h=600&fit=crop",
+    image: "https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=600&h=400&fit=crop",
     features: ["WiFi coverage extension", "Mesh network setup", "Guest WiFi", "Signal optimization", "Office network"]
   },
   {
@@ -83,7 +83,7 @@ const otherServices = [
     title: "Technical Installations",
     desc: "Professional technical installation services for all your IT and security needs. Expert technicians with years of experience.",
     color: "bg-indigo-600",
-    image: "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=800&h=600&fit=crop",
+    image: "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=600&h=400&fit=crop",
     features: ["IT infrastructure", "Network cabling", "Hardware installation", "System configuration", "Technical support"]
   },
 ];
@@ -97,7 +97,7 @@ export default function ServicesPage() {
   return (
     <div className="min-h-screen bg-white">
 
-      {/* ============ HEADER ============ */}
+      {/* HEADER */}
       <div className="relative bg-blue-950 overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(#ffffff12_1px,transparent_1px)] bg-[length:36px_36px]" />
         <div className="absolute -top-24 -right-24 w-72 h-72 bg-emerald-500/30 rounded-full blur-3xl" />
@@ -114,7 +114,7 @@ export default function ServicesPage() {
         </div>
       </div>
 
-      {/* ============ INTERNET PACKAGES ============ */}
+      {/* INTERNET PACKAGES */}
       <section className="py-12 sm:py-20 px-4 sm:px-6 bg-white">
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center gap-3 mb-2 sm:mb-3">
@@ -169,7 +169,7 @@ export default function ServicesPage() {
         </div>
       </section>
 
-      {/* ============ OTHER SERVICES WITH IMAGES ============ */}
+      {/* SERVICES WITH IMAGES */}
       <section className="py-12 sm:py-20 px-4 sm:px-6 bg-slate-50">
         <div className="max-w-6xl mx-auto">
           <p className="text-emerald-600 font-semibold tracking-widest text-xs sm:text-sm">INSTALLATIONS &amp; SECURITY</p>
@@ -183,7 +183,6 @@ export default function ServicesPage() {
                 key={i}
                 className="bg-white rounded-2xl sm:rounded-3xl border border-slate-100 overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
               >
-                {/* Image */}
                 <div className="relative h-48 sm:h-56 bg-slate-200 overflow-hidden">
                   <Image
                     src={service.image}
@@ -205,11 +204,9 @@ export default function ServicesPage() {
                   </div>
                 </div>
 
-                {/* Content */}
                 <div className="p-5 sm:p-6">
                   <p className="text-slate-600 text-sm leading-relaxed mb-4">{service.desc}</p>
                   
-                  {/* Features */}
                   <div className="flex flex-wrap gap-1.5 mb-4">
                     {service.features.slice(0, 3).map((feature, idx) => (
                       <span key={idx} className="text-[10px] bg-slate-100 text-slate-600 px-2 py-1 rounded-full">
@@ -236,7 +233,7 @@ export default function ServicesPage() {
         </div>
       </section>
 
-      {/* ============ ADD-ONS ============ */}
+      {/* ADD-ONS */}
       <section className="py-12 sm:py-20 px-4 sm:px-6 bg-white">
         <div className="max-w-6xl mx-auto">
           <p className="text-emerald-600 font-semibold tracking-widest text-xs sm:text-sm">ALREADY A CUSTOMER?</p>
@@ -263,7 +260,7 @@ export default function ServicesPage() {
         </div>
       </section>
 
-      {/* ============ CTA ============ */}
+      {/* CTA */}
       <section className="py-16 sm:py-20 px-4 sm:px-6 bg-gradient-to-br from-emerald-600 to-emerald-700 text-white relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(#ffffff15_1px,transparent_1px)] bg-[length:40px_40px]" />
         <div className="max-w-3xl mx-auto text-center relative z-10">
@@ -295,4 +292,4 @@ export default function ServicesPage() {
       </section>
     </div>
   );
-}
+    }
