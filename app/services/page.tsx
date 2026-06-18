@@ -12,12 +12,6 @@ import {
   ArrowUpCircle,
   Phone,
   CheckCircle2,
-  Camera,
-  Bell,
-  Wrench,
-  MapPin,
-  CreditCard,
-  TrendingUp,
 } from "lucide-react";
 
 const internetPackages = [
@@ -33,36 +27,64 @@ const otherServices = [
     title: "Solar panel installation",
     desc: "Design and installation of solar systems sized to your home or business power needs, with battery backup options.",
     color: "bg-amber-500",
+    image: "/images/services/solar.jpg",
+    features: ["Solar panel installation", "Battery backup systems", "System design", "Grid-tied solutions", "Off-grid systems"]
   },
   {
     icon: Zap,
     title: "Electrical installation",
     desc: "Full house and commercial wiring, fault diagnosis, and certified electrical work done to code.",
     color: "bg-yellow-500",
+    image: "/images/services/electrical.jpg",
+    features: ["House wiring", "Commercial wiring", "Fault diagnosis", "Certified work", "Safety compliance"]
   },
   {
     icon: Video,
     title: "CCTV installation",
     desc: "Indoor and outdoor camera systems with remote viewing on your phone, sized for homes, shops, or compounds.",
     color: "bg-slate-700",
+    image: "/images/services/cctv.jpg",
+    features: ["HD cameras", "Remote viewing", "Night vision", "Indoor/outdoor", "24/7 monitoring"]
   },
   {
     icon: ShieldAlert,
     title: "Electric fence installation",
     desc: "Perimeter security fencing with shock deterrent and alarm integration for homes and commercial premises.",
     color: "bg-red-600",
+    image: "/images/services/electric-fence.jpg",
+    features: ["Perimeter security", "Shock deterrent", "Alarm integration", "Commercial premises", "Home security"]
   },
   {
     icon: Flame,
     title: "Fire alarm systems",
     desc: "Smoke and heat detection systems with audible alerts, installed and tested to meet safety requirements.",
     color: "bg-orange-600",
+    image: "/images/services/fire-alarm.jpg",
+    features: ["Smoke detection", "Heat detection", "Audible alerts", "Safety compliance", "System testing"]
   },
   {
     icon: Lock,
     title: "Burglar alarm systems",
     desc: "Motion-sensor and entry alarms with optional monitoring, giving you alerts the moment something's wrong.",
     color: "bg-blue-700",
+    image: "/images/services/burglar-alarm.jpg",
+    features: ["Motion sensors", "Entry alarms", "Remote monitoring", "Instant alerts", "24/7 protection"]
+  },
+  {
+    icon: Wifi,
+    title: "Access Points Installation",
+    desc: "Extend your network coverage with professional access point installation. Perfect for offices, hotels, and large homes.",
+    color: "bg-cyan-600",
+    image: "/images/services/access-points.jpg",
+    features: ["WiFi coverage extension", "Mesh network setup", "Guest WiFi", "Signal optimization", "Office network"]
+  },
+  {
+    icon: ShieldAlert,
+    title: "Technical Installations",
+    desc: "Professional technical installation services for all your IT and security needs. Expert technicians with years of experience.",
+    color: "bg-indigo-600",
+    image: "/images/services/technical.jpg",
+    features: ["IT infrastructure", "Network cabling", "Hardware installation", "System configuration", "Technical support"]
   },
 ];
 
@@ -155,23 +177,50 @@ export default function ServicesPage() {
             Solar, electrical, and security work done right
           </h2>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {otherServices.map((service, i) => (
               <div
                 key={i}
-                className="bg-white rounded-2xl sm:rounded-3xl border border-slate-100 p-5 sm:p-7 hover:shadow-lg transition-all duration-300"
+                className="bg-white rounded-2xl sm:rounded-3xl border border-slate-100 overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
               >
-                <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-2xl ${service.color} flex items-center justify-center mb-3 sm:mb-5`}>
-                  <service.icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                {/* Image */}
+                <div className="relative h-48 sm:h-56 bg-slate-200 overflow-hidden">
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-100 to-slate-200">
+                    <service.icon className="w-16 h-16 text-blue-400/60" />
+                  </div>
+                  <div className="absolute top-4 right-4 z-10">
+                    <div className={`w-10 h-10 rounded-full ${service.color} flex items-center justify-center shadow-lg`}>
+                      <service.icon className="w-5 h-5 text-white" />
+                    </div>
+                  </div>
                 </div>
-                <h3 className="text-base sm:text-lg font-bold text-blue-950 mb-1.5 sm:mb-2">{service.title}</h3>
-                <p className="text-slate-600 text-xs sm:text-sm leading-relaxed mb-4 sm:mb-5">{service.desc}</p>
-                <Link
-                  href="/contact"
-                  className="text-sm font-semibold text-emerald-600 hover:text-emerald-700 transition-colors inline-flex items-center gap-1"
-                >
-                  Get a quote →
-                </Link>
+
+                {/* Content */}
+                <div className="p-5 sm:p-6">
+                  <h3 className="text-lg sm:text-xl font-bold text-blue-950 mb-2">{service.title}</h3>
+                  <p className="text-slate-600 text-sm leading-relaxed mb-4">{service.desc}</p>
+                  
+                  {/* Features */}
+                  <div className="flex flex-wrap gap-1.5 mb-4">
+                    {service.features.slice(0, 3).map((feature, idx) => (
+                      <span key={idx} className="text-[10px] bg-slate-100 text-slate-600 px-2 py-1 rounded-full">
+                        {feature}
+                      </span>
+                    ))}
+                    {service.features.length > 3 && (
+                      <span className="text-[10px] bg-slate-100 text-slate-600 px-2 py-1 rounded-full">
+                        +{service.features.length - 3} more
+                      </span>
+                    )}
+                  </div>
+
+                  <Link
+                    href="/contact"
+                    className="inline-flex items-center gap-1 text-sm font-semibold text-emerald-600 hover:text-emerald-700 transition-colors"
+                  >
+                    Get a quote →
+                  </Link>
+                </div>
               </div>
             ))}
           </div>
@@ -190,7 +239,7 @@ export default function ServicesPage() {
             {addOns.map((item, i) => (
               <div
                 key={i}
-                className="flex items-start gap-4 sm:gap-5 bg-slate-50 rounded-2xl sm:rounded-3xl border border-slate-100 p-5 sm:p-7"
+                className="flex items-start gap-4 sm:gap-5 bg-slate-50 rounded-2xl sm:rounded-3xl border border-slate-100 p-5 sm:p-7 hover:shadow-lg transition-all duration-300"
               >
                 <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-blue-950 flex items-center justify-center shrink-0">
                   <item.icon className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-400" />
@@ -237,4 +286,4 @@ export default function ServicesPage() {
       </section>
     </div>
   );
-}
+    }
