@@ -1,30 +1,55 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { Pool } from 'pg';
+import { drizzle } from 'drizzle-orm/better-sqlite3';
+import Database from 'better-sqlite3';
+import { sql } from 'drizzle-orm';
+import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
 
-// Create a connection pool
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  // Optional: Add SSL configuration if needed
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-});
+// Initialize SQLite database
+const sqlite = new Database('careers.db');
+const db = drizzle(sqlite);
+
+// Create table if it doesn't exist
+const createTable = sql`
+  CREATE TABLE IF NOT EXISTS roles (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    department TEXT NOT NULL,
+    location TEXT NOT NULL,
+    type TEXT NOT NULL,
+    icon TEXT DEFAULT 'Wrench',
+    desc TEXT NOT NULL,
+    status TEXT DEFAULT 'open',
+    posted_date TEXT DEFAULT CURRENT_DATE
+  )
+`;
+db.run(createTable);
+
+// Sample data - insert only if table is empty
+const checkEmpty = db.get(sql`SELECT COUNT(*) as count FROM roles`) as { count: number };
+if (checkEmpty.count === 0) {
+  const insertData = sql`
+    INSERT INTO roles (title, department, location, type, icon, desc, status, posted_date) VALUES
+    ('Field Technician', 'Network Operations', 'Thika', 'Full-time', 'Wrench', 'Install and maintain fibre connections for homes and businesses, troubleshoot on-site issues, and keep our network running reliably across Thika.', 'open', '2026-06-01'),
+    ('Customer Support Agent', 'Customer Experience', 'Thika', 'Full-time', 'Headset', 'Be the first voice customers hear — handle billing questions, technical support calls, and walk-in inquiries with patience and clarity.', 'open', '2026-06-10'),
+    ('Sales Representative', 'Sales & Marketing', 'Thika', 'Full-time', 'TrendingUp', 'Help grow our customer base across Thika. Engage with potential clients, explain our packages, and drive adoption of fibre internet in new areas.', 'open', '2026-06-15')
+  `;
+  db.run(insertData);
+}
 
 // GET: Fetch all open roles
 export async function GET(request: NextRequest) {
-  let client;
   try {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status') || 'open';
     
-    client = await pool.connect();
-    const result = await client.query(
-      'SELECT * FROM roles WHERE status = $1 ORDER BY posted_date DESC',
-      [status]
+    const result = db.all(
+      sql`SELECT * FROM roles WHERE status = ${status} ORDER BY posted_date DESC`
     );
     
     return NextResponse.json({
       success: true,
-      data: result.rows,
-      total: result.rowCount,
+      data: result,
+      total: result.length,
     }, { status: 200 });
     
   } catch (error) {
@@ -33,19 +58,15 @@ export async function GET(request: NextRequest) {
       { success: false, error: 'Failed to fetch job openings' },
       { status: 500 }
     );
-  } finally {
-    if (client) client.release();
   }
 }
 
 // POST: Create a new job opening
 export async function POST(request: NextRequest) {
-  let client;
   try {
     const body = await request.json();
     const { title, department, location, type, icon, desc } = body;
     
-    // Validate required fields
     if (!title || !department || !location || !type || !desc) {
       return NextResponse.json(
         { success: false, error: 'Missing required fields' },
@@ -53,17 +74,18 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    client = await pool.connect();
-    const result = await client.query(
-      `INSERT INTO roles (title, department, location, type, icon, desc, status, posted_date)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-       RETURNING *`,
-      [title, department, location, type, icon || 'Wrench', desc, 'open', new Date().toISOString().split('T')[0]]
+    const result = db.run(
+      sql`INSERT INTO roles (title, department, location, type, icon, desc, status, posted_date)
+          VALUES (${title}, ${department}, ${location}, ${type}, ${icon || 'Wrench'}, ${desc}, 'open', date('now'))`
+    );
+    
+    const newRole = db.get(
+      sql`SELECT * FROM roles WHERE id = ${result.lastInsertRowid}`
     );
     
     return NextResponse.json({
       success: true,
-      data: result.rows[0],
+      data: newRole,
       message: 'Job opening created successfully',
     }, { status: 201 });
     
@@ -73,14 +95,11 @@ export async function POST(request: NextRequest) {
       { success: false, error: 'Failed to create job opening' },
       { status: 500 }
     );
-  } finally {
-    if (client) client.release();
   }
 }
 
 // PUT: Update an existing job opening
 export async function PUT(request: NextRequest) {
-  let client;
   try {
     const body = await request.json();
     const { id, title, department, location, type, icon, desc, status } = body;
@@ -92,20 +111,16 @@ export async function PUT(request: NextRequest) {
       );
     }
     
-    client = await pool.connect();
-    
-    // Build dynamic update query
     const updates: string[] = [];
     const values: any[] = [];
-    let paramIndex = 1;
     
-    if (title) { updates.push(`title = $${paramIndex++}`); values.push(title); }
-    if (department) { updates.push(`department = $${paramIndex++}`); values.push(department); }
-    if (location) { updates.push(`location = $${paramIndex++}`); values.push(location); }
-    if (type) { updates.push(`type = $${paramIndex++}`); values.push(type); }
-    if (icon) { updates.push(`icon = $${paramIndex++}`); values.push(icon); }
-    if (desc) { updates.push(`desc = $${paramIndex++}`); values.push(desc); }
-    if (status) { updates.push(`status = $${paramIndex++}`); values.push(status); }
+    if (title) updates.push(`title = '${title}'`);
+    if (department) updates.push(`department = '${department}'`);
+    if (location) updates.push(`location = '${location}'`);
+    if (type) updates.push(`type = '${type}'`);
+    if (icon) updates.push(`icon = '${icon}'`);
+    if (desc) updates.push(`desc = '${desc}'`);
+    if (status) updates.push(`status = '${status}'`);
     
     if (updates.length === 0) {
       return NextResponse.json(
@@ -114,17 +129,10 @@ export async function PUT(request: NextRequest) {
       );
     }
     
-    values.push(id);
-    const query = `
-      UPDATE roles 
-      SET ${updates.join(', ')}
-      WHERE id = $${paramIndex}
-      RETURNING *
-    `;
+    const query = `UPDATE roles SET ${updates.join(', ')} WHERE id = ${id} RETURNING *`;
+    const result = db.get(sql.raw(query));
     
-    const result = await client.query(query, values);
-    
-    if (result.rowCount === 0) {
+    if (!result) {
       return NextResponse.json(
         { success: false, error: 'Role not found' },
         { status: 404 }
@@ -133,7 +141,7 @@ export async function PUT(request: NextRequest) {
     
     return NextResponse.json({
       success: true,
-      data: result.rows[0],
+      data: result,
       message: 'Job opening updated successfully',
     }, { status: 200 });
     
@@ -143,14 +151,11 @@ export async function PUT(request: NextRequest) {
       { success: false, error: 'Failed to update job opening' },
       { status: 500 }
     );
-  } finally {
-    if (client) client.release();
   }
 }
 
 // DELETE: Remove a job opening
 export async function DELETE(request: NextRequest) {
-  let client;
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
@@ -162,13 +167,11 @@ export async function DELETE(request: NextRequest) {
       );
     }
     
-    client = await pool.connect();
-    const result = await client.query(
-      'DELETE FROM roles WHERE id = $1 RETURNING id',
-      [parseInt(id)]
+    const result = db.run(
+      sql`DELETE FROM roles WHERE id = ${parseInt(id)}`
     );
     
-    if (result.rowCount === 0) {
+    if (result.changes === 0) {
       return NextResponse.json(
         { success: false, error: 'Role not found' },
         { status: 404 }
@@ -186,7 +189,5 @@ export async function DELETE(request: NextRequest) {
       { success: false, error: 'Failed to delete job opening' },
       { status: 500 }
     );
-  } finally {
-    if (client) client.release();
   }
 }
