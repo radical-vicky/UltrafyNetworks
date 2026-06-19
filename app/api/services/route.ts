@@ -106,7 +106,6 @@ export async function POST(request: NextRequest) {
     const newService = getStmt.get(info.lastInsertRowid) as any;
     db.close();
     
-    // Check if newService exists before spreading
     if (!newService) {
       return NextResponse.json(
         { success: false, error: 'Failed to retrieve created service' },
