@@ -33,6 +33,8 @@ function initializeDatabase() {
       ['Grace Wanjiru', 'Weitethie', 'Switched from mobile data and never looked back. My kids\' online classes run without a single freeze now.', 5],
       ['Peter Mwangi', 'Ngoingwa', 'Installation took less than two hours and support actually picks up the phone when I call.', 5],
       ['Sarah Akinyi', 'Section 9', 'The 30 Mbps plan handles three of us streaming at once with no lag. Best decision for our home this year.', 5],
+      ['John Kamau', 'Thika Town', 'UltrafyFiberNet has transformed how we work from home. The connection is stable and fast.', 5],
+      ['Mary Wanjiku', 'Gatukuyu', 'I love the 1 month free offer! The installation was smooth and the team was professional.', 4],
     ];
     
     const insertMany = db.transaction((testimonials: any[][]) => {
@@ -98,9 +100,13 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { name, area, quote, rating } = body;
     
+    // Validate required fields
     if (!name || !area || !quote) {
       return NextResponse.json(
-        { success: false, error: 'Please fill in all required fields: name, area, quote' },
+        { 
+          success: false, 
+          error: 'Please fill in all required fields: name, area, quote' 
+        },
         { status: 400 }
       );
     }
@@ -111,12 +117,13 @@ export async function POST(request: NextRequest) {
     const dbPath = '/tmp/testimonials.db';
     const db = new Database(dbPath);
     
+    // Insert with 'pending' status
     const stmt = db.prepare(`
       INSERT INTO testimonials (name, area, quote, rating, status)
       VALUES (?, ?, ?, ?, 'pending')
     `);
     
-    const info = stmt.run(name, area, quote, validRating);
+    const info = stmt.run(name.trim(), area.trim(), quote.trim(), validRating);
     
     const getStmt = db.prepare('SELECT * FROM testimonials WHERE id = ?');
     const newTestimonial = getStmt.get(info.lastInsertRowid);
@@ -131,7 +138,10 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Database error:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to submit review. Please try again.' },
+      { 
+        success: false, 
+        error: 'Failed to submit review. Please try again.' 
+      },
       { status: 500 }
     );
   }
