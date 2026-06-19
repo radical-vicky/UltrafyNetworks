@@ -15,7 +15,8 @@ import {
   User,
   MapPin,
   Shield,
-  Lock
+  Lock,
+  MessageCircle
 } from 'lucide-react';
 
 interface Review {
