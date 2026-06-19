@@ -104,9 +104,7 @@ interface Service {
   created_at: string;
 }
 
-// ============ MODAL COMPONENTS ============
-
-// Service Modal
+// ============ SERVICE MODAL ============
 function ServiceModal({ 
   isOpen, 
   onClose, 
@@ -203,8 +201,8 @@ function ServiceModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-in slide-in-from-bottom-4 duration-300">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-white border-b border-slate-100 px-6 py-4 flex items-center justify-between z-10">
           <div className="flex items-center gap-3">
             <button onClick={onClose} className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors">
@@ -338,7 +336,7 @@ function ServiceModal({
   );
 }
 
-// Job Modal
+// ============ JOB MODAL ============
 function JobModal({ isOpen, onClose, onSave, job, isEditing }: { isOpen: boolean; onClose: () => void; onSave: (data: any) => void; job?: Job | null; isEditing: boolean }) {
   const [formData, setFormData] = useState({
     title: '',
@@ -391,8 +389,8 @@ function JobModal({ isOpen, onClose, onSave, job, isEditing }: { isOpen: boolean
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-in slide-in-from-bottom-4 duration-300">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-white border-b border-slate-100 px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button onClick={onClose} className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors">
