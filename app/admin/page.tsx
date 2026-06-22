@@ -890,7 +890,7 @@ function SlideModal({ isOpen, onClose, onSave, slide, isEditing }: { isOpen: boo
     display_order: 0,
     status: 'active',
   });
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageData, setImageData] = useState<string>('');
   const [imagePreview, setImagePreview] = useState<string>('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string>('');
@@ -909,7 +909,7 @@ function SlideModal({ isOpen, onClose, onSave, slide, isEditing }: { isOpen: boo
         status: slide.status || 'active',
       });
       setImagePreview(slide.image || '');
-      setImageFile(null);
+      setImageData(slide.image || '');
     } else {
       setFormData({
         title: '',
@@ -922,7 +922,7 @@ function SlideModal({ isOpen, onClose, onSave, slide, isEditing }: { isOpen: boo
         status: 'active',
       });
       setImagePreview('');
-      setImageFile(null);
+      setImageData('');
     }
     setError('');
   }, [slide]);
@@ -933,11 +933,12 @@ function SlideModal({ isOpen, onClose, onSave, slide, isEditing }: { isOpen: boo
     const file = e.target.files?.[0];
     if (!file) return;
     
-    setImageFile(file);
-    setError('');
     const reader = new FileReader();
     reader.onloadend = () => {
-      setImagePreview(reader.result as string);
+      const base64String = reader.result as string;
+      setImagePreview(base64String);
+      setImageData(base64String);
+      setError('');
     };
     reader.readAsDataURL(file);
   };
@@ -948,19 +949,19 @@ function SlideModal({ isOpen, onClose, onSave, slide, isEditing }: { isOpen: boo
     setError('');
     
     try {
-      const formDataToSend = new FormData();
-      formDataToSend.append('title', formData.title.trim());
-      formDataToSend.append('subtitle', formData.subtitle.trim());
-      formDataToSend.append('description', formData.description.trim());
-      formDataToSend.append('cta_text', formData.cta_text.trim());
-      formDataToSend.append('cta_link', formData.cta_link.trim());
-      formDataToSend.append('badge', formData.badge.trim());
-      formDataToSend.append('display_order', String(formData.display_order));
-      formDataToSend.append('status', formData.status);
+      const dataToSend = {
+        title: formData.title.trim(),
+        subtitle: formData.subtitle.trim(),
+        description: formData.description.trim(),
+        cta_text: formData.cta_text.trim(),
+        cta_link: formData.cta_link.trim(),
+        badge: formData.badge.trim(),
+        display_order: formData.display_order,
+        status: formData.status,
+        image: imageData,
+      };
       
-      if (imageFile) {
-        formDataToSend.append('image', imageFile);
-      } else if (!isEditing) {
+      if (!imageData && !isEditing) {
         setError('Please select an image');
         setSaving(false);
         return;
@@ -968,13 +969,16 @@ function SlideModal({ isOpen, onClose, onSave, slide, isEditing }: { isOpen: boo
       
       const response = await fetch('/api/slider', {
         method: 'POST',
-        body: formDataToSend,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(dataToSend),
       });
       
       const data = await response.json();
       
       if (response.ok) {
-        await onSave(formDataToSend);
+        await onSave(dataToSend);
         onClose();
       } else {
         setError(data.error || 'Failed to save slide');
@@ -1577,41 +1581,45 @@ export default function AdminDashboard() {
     }
   };
 
-  // Slide CRUD with FormData
-  const handleAddSlide = async (formData: FormData) => {
+  // Slide CRUD with Base64
+  const handleAddSlide = async (data: any) => {
     try {
       const response = await fetch('/api/slider', {
         method: 'POST',
-        body: formData,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
       });
-      
-      const data = await response.json();
       
       if (response.ok) {
         await fetchAllData();
         alert('Slide added successfully!');
       } else {
-        alert(data.error || 'Failed to add slide');
+        const error = await response.json();
+        alert(error.error || 'Failed to add slide');
       }
     } catch (error) {
       alert('Error adding slide');
     }
   };
 
-  const handleUpdateSlide = async (formData: FormData) => {
+  const handleUpdateSlide = async (data: any) => {
     try {
       const response = await fetch(`/api/slider?id=${editingSlide?.id}`, {
         method: 'PUT',
-        body: formData,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
       });
-      
-      const data = await response.json();
       
       if (response.ok) {
         await fetchAllData();
         alert('Slide updated successfully!');
       } else {
-        alert(data.error || 'Failed to update slide');
+        const error = await response.json();
+        alert(error.error || 'Failed to update slide');
       }
     } catch (error) {
       alert('Error updating slide');
