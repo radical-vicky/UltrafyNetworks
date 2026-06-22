@@ -933,19 +933,6 @@ function SlideModal({ isOpen, onClose, onSave, slide, isEditing }: { isOpen: boo
     const file = e.target.files?.[0];
     if (!file) return;
     
-    // Validate file type
-    const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
-    if (!validTypes.includes(file.type)) {
-      alert('Please select a valid image (JPEG, PNG, or WebP)');
-      return;
-    }
-    
-    // Validate file size (5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      alert('Image size must be less than 5MB');
-      return;
-    }
-    
     setImageFile(file);
     setError('');
     const reader = new FileReader();
@@ -979,10 +966,21 @@ function SlideModal({ isOpen, onClose, onSave, slide, isEditing }: { isOpen: boo
         return;
       }
       
-      await onSave(formDataToSend);
-      onClose();
+      const response = await fetch('/api/slider', {
+        method: 'POST',
+        body: formDataToSend,
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        await onSave(formDataToSend);
+        onClose();
+      } else {
+        setError(data.error || 'Failed to save slide');
+      }
     } catch (err) {
-      setError((err as Error).message || 'Failed to save slide. Please try again.');
+      setError('Failed to save slide. Please try again.');
     } finally {
       setSaving(false);
     }
