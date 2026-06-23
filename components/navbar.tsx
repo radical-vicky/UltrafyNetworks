@@ -139,6 +139,16 @@ export default function Navbar() {
     setMobileOpen(false);
   };
 
+  const handleLogoClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    if (pathname === '/') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      router.push('/');
+    }
+    setMobileOpen(false);
+  };
+
   return (
     <>
       <header
@@ -153,12 +163,8 @@ export default function Navbar() {
             {/* Logo - Clickable UltrafyNetworks */}
             <Link
               href="/"
+              onClick={handleLogoClick}
               className="flex items-center gap-2 sm:gap-3 group flex-shrink-0 min-w-0 cursor-pointer"
-              onClick={() => {
-                if (pathname === '/') {
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }
-              }}
             >
               <div className="min-w-0">
                 <h1
@@ -268,12 +274,7 @@ export default function Navbar() {
           <div className="flex items-center justify-between border-b border-gray-100 px-4 sm:px-6 py-4 sm:py-5">
             <Link
               href="/"
-              onClick={() => {
-                setMobileOpen(false);
-                if (pathname === '/') {
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }
-              }}
+              onClick={handleLogoClick}
               className="flex items-center gap-2 sm:gap-3 cursor-pointer hover:opacity-80 transition-opacity"
             >
               <div>
