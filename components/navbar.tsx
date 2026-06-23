@@ -145,17 +145,17 @@ export default function Navbar() {
         className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
           isScrolled
             ? "bg-white/95 backdrop-blur-xl shadow-lg border-b border-gray-200"
-            : "bg-transparent"
+            : "bg-gradient-to-b from-blue-950/90 to-transparent"
         }`}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 sm:h-20 items-center justify-between">
-            {/* Logo */}
+            {/* Logo - Full Name */}
             <Link
               href="/"
               className="flex items-center gap-2 sm:gap-3 group flex-shrink-0"
             >
-              <div className="flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-xl sm:rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 text-white font-bold shadow-lg transition-transform duration-300 group-hover:scale-105 text-[8px] sm:text-[10px] leading-tight text-center">
+              <div className="flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-xl sm:rounded-2xl bg-gradient-to-br from-blue-600 to-blue-700 text-white font-bold shadow-lg transition-transform duration-300 group-hover:scale-105 text-[8px] sm:text-[10px] leading-tight text-center">
                 UFN
               </div>
 
@@ -192,7 +192,7 @@ export default function Navbar() {
                   className={`font-medium transition-colors duration-300 ${
                     isScrolled
                       ? "text-gray-700 hover:text-emerald-600"
-                      : "text-white/80 hover:text-white"
+                      : "text-white/90 hover:text-white"
                   }`}
                 >
                   {link.label}
@@ -207,7 +207,7 @@ export default function Navbar() {
                 className={`inline-flex items-center gap-2 rounded-xl px-3 lg:px-5 py-2 lg:py-3 text-xs lg:text-sm font-semibold transition-all duration-300 ${
                   isScrolled
                     ? "text-emerald-600 hover:bg-emerald-50"
-                    : "text-white/80 hover:text-white hover:bg-white/10"
+                    : "text-white/90 hover:text-white hover:bg-white/10"
                 }`}
               >
                 <Phone className="w-3 h-3 lg:w-4 lg:h-4" />
@@ -269,7 +269,7 @@ export default function Navbar() {
               onClick={() => setMobileOpen(false)}
               className="flex items-center gap-2 sm:gap-3"
             >
-              <div className="flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-xl sm:rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 text-white font-bold text-[8px] sm:text-[10px] leading-tight text-center">
+              <div className="flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-xl sm:rounded-2xl bg-gradient-to-br from-blue-600 to-blue-700 text-white font-bold text-[8px] sm:text-[10px] leading-tight text-center">
                 UFN
               </div>
 
