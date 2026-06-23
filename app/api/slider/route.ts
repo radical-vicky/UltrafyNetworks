@@ -2,31 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import Database from 'better-sqlite3';
 import fs from 'fs';
 import path from 'path';
-import { writeFile } from 'fs/promises';
 
 const DB_PATH = path.join(process.cwd(), 'slider.db');
-const UPLOAD_DIR = path.join(process.cwd(), 'public/uploads/slider');
-
-// Ensure upload directory exists
-if (!fs.existsSync(UPLOAD_DIR)) {
-  fs.mkdirSync(UPLOAD_DIR, { recursive: true });
-}
-
-// Define Slide interface
-interface Slide {
-  id: number;
-  title: string;
-  subtitle: string;
-  description: string;
-  image: string;
-  cta_text: string;
-  cta_link: string;
-  badge: string;
-  display_order: number;
-  status: string;
-  created_at: string;
-  updated_at: string;
-}
 
 function initializeDatabase() {
   try {
@@ -121,20 +98,6 @@ function initializeDatabase() {
   }
 }
 
-// Helper function to save uploaded file
-async function saveFile(file: File): Promise<string> {
-  const bytes = await file.arrayBuffer();
-  const buffer = Buffer.from(bytes);
-  
-  const timestamp = Date.now();
-  const ext = path.extname(file.name);
-  const filename = `${timestamp}${ext}`;
-  const filepath = path.join(UPLOAD_DIR, filename);
-  
-  await writeFile(filepath, buffer);
-  return `/uploads/slider/${filename}`;
-}
-
 // GET: Fetch all slides
 export async function GET(request: NextRequest) {
   try {
@@ -178,6 +141,13 @@ export async function POST(request: NextRequest) {
     initializeDatabase();
     
     const body = await request.json();
+    console.log('📥 Received slide data:', {
+      title: body.title,
+      subtitle: body.subtitle,
+      hasImage: !!body.image,
+      imageLength: body.image?.length || 0
+    });
+    
     const { 
       title, 
       subtitle, 
@@ -227,15 +197,17 @@ export async function POST(request: NextRequest) {
     const newSlide = getStmt.get(info.lastInsertRowid);
     db.close();
     
+    console.log('✅ Slide created with ID:', info.lastInsertRowid);
+    
     return NextResponse.json({
       success: true,
       data: newSlide,
       message: 'Slide created successfully',
     });
   } catch (error) {
-    console.error('Error creating slide:', error);
+    console.error('❌ Error creating slide:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to create slide' },
+      { success: false, error: (error as Error).message || 'Failed to create slide' },
       { status: 500 }
     );
   }
