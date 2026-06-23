@@ -145,19 +145,19 @@ export default function Navbar() {
         className={`fixed inset-x-0 top-0 z-[100] transition-all duration-300 ${
           isScrolled
             ? "bg-white/95 backdrop-blur-xl shadow-lg border-b border-gray-200"
-            : "bg-gradient-to-b from-blue-950/90 to-transparent"
+            : "bg-gradient-to-b from-blue-950/90 via-blue-950/70 to-transparent"
         }`}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 sm:h-20 items-center justify-between">
-            {/* Logo - Full Name Only */}
+        <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
+          <div className="flex h-14 sm:h-20 items-center justify-between">
+            {/* Logo - Full Name on Left */}
             <Link
               href="/"
-              className="flex items-center gap-2 sm:gap-3 group flex-shrink-0"
+              className="flex items-center gap-2 sm:gap-3 group flex-shrink-0 min-w-0"
             >
-              <div className="hidden xs:block">
+              <div className="min-w-0">
                 <h1
-                  className={`font-bold text-sm sm:text-lg transition-colors duration-300 ${
+                  className={`font-bold text-sm sm:text-lg md:text-xl transition-colors duration-300 truncate ${
                     isScrolled
                       ? "text-gray-900"
                       : "text-white"
@@ -167,7 +167,7 @@ export default function Navbar() {
                 </h1>
 
                 <p
-                  className={`text-[10px] sm:text-xs transition-colors duration-300 ${
+                  className={`hidden sm:block text-[10px] sm:text-xs transition-colors duration-300 truncate ${
                     isScrolled
                       ? "text-gray-500"
                       : "text-gray-300"
@@ -179,13 +179,13 @@ export default function Navbar() {
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center gap-6 lg:gap-8">
+            <nav className="hidden md:flex items-center gap-4 lg:gap-8">
               {navLinks.map((link) => (
                 <a
                   key={link.href}
                   href={link.href}
                   onClick={(e) => handleNavigation(e, link.href)}
-                  className={`font-medium transition-colors duration-300 ${
+                  className={`font-medium transition-colors duration-300 text-sm lg:text-base whitespace-nowrap ${
                     isScrolled
                       ? "text-gray-700 hover:text-emerald-600"
                       : "text-white/90 hover:text-white"
@@ -197,22 +197,23 @@ export default function Navbar() {
             </nav>
 
             {/* Desktop CTA */}
-            <div className="hidden md:flex items-center gap-3 lg:gap-4">
+            <div className="hidden md:flex items-center gap-2 lg:gap-4">
               <a
                 href="tel:0700541561"
-                className={`inline-flex items-center gap-2 rounded-xl px-3 lg:px-5 py-2 lg:py-3 text-xs lg:text-sm font-semibold transition-all duration-300 ${
+                className={`inline-flex items-center gap-1 lg:gap-2 rounded-xl px-2 lg:px-5 py-1.5 lg:py-3 text-xs lg:text-sm font-semibold transition-all duration-300 ${
                   isScrolled
                     ? "text-emerald-600 hover:bg-emerald-50"
                     : "text-white/90 hover:text-white hover:bg-white/10"
                 }`}
               >
                 <Phone className="w-3 h-3 lg:w-4 lg:h-4" />
-                0700 541 561
+                <span className="hidden lg:inline">0700 541 561</span>
+                <span className="lg:hidden">Call</span>
               </a>
               <a
                 href="/#contact"
                 onClick={(e) => handleNavigation(e, "/#contact")}
-                className="inline-flex items-center gap-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 px-4 lg:px-5 py-2 lg:py-3 text-xs lg:text-sm font-semibold text-white shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5"
+                className="inline-flex items-center gap-1 lg:gap-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 px-3 lg:px-5 py-1.5 lg:py-3 text-xs lg:text-sm font-semibold text-white shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5 whitespace-nowrap"
               >
                 Get Connected
                 <ArrowRight className="h-3 w-3 lg:h-4 lg:w-4" />
@@ -223,20 +224,20 @@ export default function Navbar() {
             <button
               type="button"
               onClick={() => setMobileOpen(true)}
-              className={`md:hidden rounded-xl p-1.5 sm:p-2 transition-colors duration-300 ${
+              className={`md:hidden rounded-xl p-1.5 sm:p-2 transition-colors duration-300 flex-shrink-0 ${
                 isScrolled
                   ? "text-gray-900 hover:bg-gray-100"
                   : "text-white hover:bg-white/10"
               }`}
               aria-label="Open Menu"
             >
-              <Menu className="h-6 w-6 sm:h-7 sm:w-7" />
+              <Menu className="h-5 w-5 sm:h-6 sm:w-6" />
             </button>
           </div>
         </div>
       </header>
 
-      {/* Mobile Drawer */}
+      {/* Mobile Drawer - Full Screen */}
       <div
         className={`fixed inset-0 z-[60] transition-all duration-300 md:hidden ${
           mobileOpen
@@ -250,15 +251,15 @@ export default function Navbar() {
           onClick={() => setMobileOpen(false)}
         />
 
-        {/* Drawer */}
+        {/* Drawer - Full width on mobile */}
         <aside
-          className={`absolute right-0 top-0 h-full w-[85%] max-w-sm bg-white shadow-2xl transition-transform duration-300 ${
+          className={`absolute right-0 top-0 h-full w-full max-w-sm bg-white shadow-2xl transition-transform duration-300 ease-in-out ${
             mobileOpen
               ? "translate-x-0"
               : "translate-x-full"
           }`}
         >
-          {/* Drawer Header */}
+          {/* Drawer Header - With Logo */}
           <div className="flex items-center justify-between border-b border-gray-100 px-4 sm:px-6 py-4 sm:py-5">
             <Link
               href="/"
@@ -266,12 +267,11 @@ export default function Navbar() {
               className="flex items-center gap-2 sm:gap-3"
             >
               <div>
-                <h2 className="font-bold text-sm sm:text-base text-gray-900">
+                <h2 className="font-bold text-base sm:text-lg text-gray-900">
                   UltrafyNetworks
                 </h2>
-
                 <p className="text-[10px] sm:text-xs text-gray-500">
-                  Fast • Reliable
+                  Fast • Reliable • Unlimited
                 </p>
               </div>
             </Link>
@@ -279,21 +279,21 @@ export default function Navbar() {
             <button
               type="button"
               onClick={() => setMobileOpen(false)}
-              className="rounded-xl p-1.5 sm:p-2 text-gray-600 hover:bg-gray-100"
+              className="rounded-xl p-1.5 sm:p-2 text-gray-600 hover:bg-gray-100 transition-colors"
               aria-label="Close Menu"
             >
               <X className="h-5 w-5 sm:h-6 sm:w-6" />
             </button>
           </div>
 
-          {/* Drawer Navigation */}
-          <div className="flex flex-col px-4 sm:px-6 py-6 sm:py-8 overflow-y-auto" style={{ maxHeight: "calc(100% - 120px)" }}>
+          {/* Drawer Navigation - Scrollable */}
+          <div className="flex flex-col px-4 sm:px-6 py-4 sm:py-6 overflow-y-auto" style={{ maxHeight: "calc(100% - 120px)" }}>
             {navLinks.map((link) => (
               <a
                 key={link.href}
                 href={link.href}
                 onClick={(e) => handleNavigation(e, link.href)}
-                className="rounded-xl px-4 py-3.5 sm:py-4 text-base sm:text-lg font-medium text-gray-700 transition hover:bg-gray-100 hover:text-emerald-600"
+                className="rounded-xl px-4 py-3.5 sm:py-4 text-base sm:text-lg font-medium text-gray-700 transition hover:bg-gray-100 hover:text-emerald-600 active:bg-gray-200"
               >
                 {link.label}
               </a>
@@ -325,32 +325,29 @@ export default function Navbar() {
             <a
               href="/#contact"
               onClick={(e) => handleNavigation(e, "/#contact")}
-              className="mt-4 sm:mt-6 inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 px-5 py-3.5 sm:py-4 font-semibold text-white shadow-lg transition hover:shadow-xl text-sm sm:text-base"
+              className="mt-4 sm:mt-6 inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 px-5 py-3.5 sm:py-4 font-semibold text-white shadow-lg transition text-sm sm:text-base w-full"
             >
               Get Connected
               <ArrowRight className="h-4 w-4" />
             </a>
 
             <div className="mt-3 sm:mt-4 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-xs sm:text-sm">
-              <a href="tel:0700541561" className="text-emerald-600 font-medium">
+              <a href="tel:0700541561" className="text-emerald-600 font-medium hover:text-emerald-700 active:text-emerald-800">
                 Call 0700 541 561
               </a>
               <span className="text-gray-300 hidden sm:inline">|</span>
-              <a href="tel:0703199691" className="text-emerald-600 font-medium">
+              <a href="tel:0703199691" className="text-emerald-600 font-medium hover:text-emerald-700 active:text-emerald-800">
                 WhatsApp 0703 199 691
               </a>
             </div>
           </div>
 
-          {/* Footer */}
+          {/* Footer - Fixed at bottom */}
           <div className="absolute bottom-0 left-0 right-0 border-t border-gray-100 px-4 sm:px-6 py-4 sm:py-5 bg-white">
-            <p className="text-xs sm:text-sm text-gray-500">
-              Monday – Saturday
+            <p className="text-xs sm:text-sm text-gray-500 text-center">
+              Monday – Saturday • 8:00 AM – 5:00 PM
             </p>
-            <p className="font-medium text-gray-900 text-sm sm:text-base">
-              8:00 AM – 5:00 PM
-            </p>
-            <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-emerald-600 font-medium">
+            <p className="mt-1 text-xs sm:text-sm text-emerald-600 font-medium text-center">
               24/7 Technical Support Available
             </p>
           </div>
