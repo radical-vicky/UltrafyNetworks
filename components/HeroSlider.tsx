@@ -174,11 +174,11 @@ export default function HeroSlider() {
                     <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
                   </a>
                   <a
-                    href="tel:0700541561"
+                    href="tel:0740121382"
                     className="border-2 border-white/30 hover:border-white text-white font-medium px-5 sm:px-7 lg:px-9 py-3 sm:py-3.5 rounded-full text-sm sm:text-base lg:text-lg flex items-center gap-2 hover:bg-white/10 transition-all duration-300"
                   >
                     <Phone className="w-4 h-4 sm:w-5 sm:h-5" />
-                    <span className="hidden sm:inline">Call </span>0700 541 561
+                    <span className="hidden sm:inline">Call </span>0740121382
                   </a>
                 </div>
 
