@@ -1,38 +1,54 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Database from 'better-sqlite3';
-import fs from 'fs';
-import path from 'path';
 
-// Use project directory instead of /tmp for Windows compatibility
-const DB_PATH = path.join(process.cwd(), 'testimonials.db');
+// Use in-memory database for Vercel compatibility
+let db: Database.Database | null = null;
+let isInitialized = false;
+
+function getDb() {
+  if (!db) {
+    db = new Database(':memory:');
+    db.pragma('journal_mode = WAL');
+  }
+  return db;
+}
 
 function initializeDatabase() {
+  if (isInitialized) return;
+  
   try {
-    const dbExists = fs.existsSync(DB_PATH);
-    const db = new Database(DB_PATH);
+    const db = getDb();
     
-    if (!dbExists) {
-      db.exec(`
-        CREATE TABLE IF NOT EXISTS testimonials (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          name TEXT NOT NULL,
-          area TEXT NOT NULL,
-          quote TEXT NOT NULL,
-          rating INTEGER DEFAULT 5,
-          status TEXT DEFAULT 'pending',
-          created_at TEXT DEFAULT CURRENT_TIMESTAMP
-        )
-      `);
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS testimonials (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        area TEXT NOT NULL,
+        quote TEXT NOT NULL,
+        rating INTEGER DEFAULT 5,
+        status TEXT DEFAULT 'pending',
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    
+    // Check if table has data
+    const countStmt = db.prepare('SELECT COUNT(*) as count FROM testimonials');
+    const result = countStmt.get() as { count: number };
+    
+    if (result.count === 0) {
+      console.log('📊 Inserting sample testimonial data...');
       
       const insertStmt = db.prepare(`
         INSERT INTO testimonials (name, area, quote, rating, status) 
-        VALUES (?, ?, ?, ?, 'approved')
+        VALUES (?, ?, ?, ?, ?)
       `);
       
       const sampleTestimonials = [
-        ['Grace Wanjiru', 'Weitethie', 'Switched from mobile data and never looked back. My kids\' online classes run without a single freeze now.', 5],
-        ['Peter Mwangi', 'Ngoingwa', 'Installation took less than two hours and support actually picks up the phone when I call.', 5],
-        ['Sarah Akinyi', 'Section 9', 'The 30 Mbps plan handles three of us streaming at once with no lag. Best decision for our home this year.', 5],
+        ['Grace Wanjiru', 'Weitethie', 'Switched from mobile data and never looked back. My kids\' online classes run without a single freeze now.', 5, 'approved'],
+        ['Peter Mwangi', 'Ngoingwa', 'Installation took less than two hours and support actually picks up the phone when I call.', 5, 'approved'],
+        ['Sarah Akinyi', 'Section 9', 'The 30 Mbps plan handles three of us streaming at once with no lag. Best decision for our home this year.', 5, 'approved'],
+        ['James Kariuki', 'Thika Town', 'The fibre connection is incredibly fast. I can work from home without any interruptions.', 5, 'pending'],
+        ['Mary Wanjiku', 'Gatukuyu', 'Finally got reliable internet in my area. The team was professional and the setup was quick.', 4, 'pending'],
       ];
       
       const insertMany = db.transaction((testimonials: any[][]) => {
@@ -42,70 +58,56 @@ function initializeDatabase() {
       });
       
       insertMany(sampleTestimonials);
-      console.log('✅ Testimonials database initialized!');
+      console.log('✅ Sample testimonial data inserted into memory!');
     }
-    db.close();
-    return true;
+    
+    isInitialized = true;
   } catch (error) {
     console.error('❌ Error initializing testimonials database:', error);
-    return false;
   }
 }
 
-// GET: Fetch all approved testimonials
+// GET: Fetch testimonials with optional status filter
 export async function GET(request: NextRequest) {
   try {
     initializeDatabase();
     
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get('limit') || '10');
+    const status = searchParams.get('status') || 'all';
     
-    // Check if database file exists
-    if (!fs.existsSync(DB_PATH)) {
-      // Return mock data as fallback
-      const mockTestimonials = [
-        { id: 1, name: "Grace Wanjiru", area: "Weitethie", quote: "Switched from mobile data and never looked back. My kids' online classes run without a single freeze now.", rating: 5, status: "approved" },
-        { id: 2, name: "Peter Mwangi", area: "Ngoingwa", quote: "Installation took less than two hours and support actually picks up the phone when I call.", rating: 5, status: "approved" },
-        { id: 3, name: "Sarah Akinyi", area: "Section 9", quote: "The 30 Mbps plan handles three of us streaming at once with no lag. Best decision for our home this year.", rating: 5, status: "approved" },
-      ];
-      
-      return NextResponse.json({
-        success: true,
-        data: mockTestimonials,
-        total: mockTestimonials.length,
-        usingFallback: true,
-      }, { status: 200 });
+    const db = getDb();
+    
+    let query = 'SELECT * FROM testimonials';
+    const params: any[] = [];
+    
+    if (status !== 'all') {
+      query += ' WHERE status = ?';
+      params.push(status);
     }
     
-    const db = new Database(DB_PATH);
-    // Use single quotes for string literals in SQLite
-    const stmt = db.prepare(
-      "SELECT * FROM testimonials WHERE status = 'approved' ORDER BY created_at DESC LIMIT ?"
-    );
-    const result = stmt.all(limit);
-    db.close();
+    query += ' ORDER BY created_at DESC';
+    
+    if (limit > 0) {
+      query += ' LIMIT ?';
+      params.push(limit);
+    }
+    
+    const stmt = db.prepare(query);
+    const result = stmt.all(...params);
     
     return NextResponse.json({
       success: true,
       data: result,
       total: result.length,
-    }, { status: 200 });
+    });
     
   } catch (error) {
     console.error('Database error:', error);
-    // Return mock data as fallback
-    const mockTestimonials = [
-      { id: 1, name: "Grace Wanjiru", area: "Weitethie", quote: "Switched from mobile data and never looked back. My kids' online classes run without a single freeze now.", rating: 5, status: "approved" },
-      { id: 2, name: "Peter Mwangi", area: "Ngoingwa", quote: "Installation took less than two hours and support actually picks up the phone when I call.", rating: 5, status: "approved" },
-      { id: 3, name: "Sarah Akinyi", area: "Section 9", quote: "The 30 Mbps plan handles three of us streaming at once with no lag. Best decision for our home this year.", rating: 5, status: "approved" },
-    ];
-    
-    return NextResponse.json({
-      success: true,
-      data: mockTestimonials,
-      total: mockTestimonials.length,
-      usingFallback: true,
-    }, { status: 200 });
+    return NextResponse.json(
+      { success: false, error: 'Failed to fetch testimonials: ' + (error as Error).message },
+      { status: 500 }
+    );
   }
 }
 
@@ -129,7 +131,7 @@ export async function POST(request: NextRequest) {
     
     const validRating = rating && rating >= 1 && rating <= 5 ? rating : 5;
     
-    const db = new Database(DB_PATH);
+    const db = getDb();
     const stmt = db.prepare(`
       INSERT INTO testimonials (name, area, quote, rating, status)
       VALUES (?, ?, ?, ?, 'pending')
@@ -139,7 +141,6 @@ export async function POST(request: NextRequest) {
     
     const getStmt = db.prepare('SELECT * FROM testimonials WHERE id = ?');
     const newTestimonial = getStmt.get(info.lastInsertRowid);
-    db.close();
     
     return NextResponse.json({
       success: true,
@@ -152,8 +153,76 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       { 
         success: false, 
-        error: 'Failed to submit review. Please try again.' 
+        error: 'Failed to submit review: ' + (error as Error).message 
       },
+      { status: 500 }
+    );
+  }
+}
+
+// PUT: Update testimonial status (admin only)
+export async function PUT(request: NextRequest) {
+  try {
+    initializeDatabase();
+    
+    const body = await request.json();
+    console.log('📝 PUT request body:', body);
+    
+    const { id, status } = body;
+    
+    if (!id) {
+      return NextResponse.json(
+        { success: false, error: 'Testimonial ID is required' },
+        { status: 400 }
+      );
+    }
+    
+    if (!status || !['pending', 'approved', 'rejected'].includes(status)) {
+      return NextResponse.json(
+        { success: false, error: 'Valid status (pending, approved, rejected) is required' },
+        { status: 400 }
+      );
+    }
+    
+    const db = getDb();
+    
+    // Check if testimonial exists
+    const checkStmt = db.prepare('SELECT * FROM testimonials WHERE id = ?');
+    const existing = checkStmt.get(parseInt(id));
+    
+    if (!existing) {
+      return NextResponse.json(
+        { success: false, error: `Testimonial with ID ${id} not found` },
+        { status: 404 }
+      );
+    }
+    
+    const stmt = db.prepare(`
+      UPDATE testimonials SET status = ? WHERE id = ?
+    `);
+    
+    const result = stmt.run(status, parseInt(id));
+    
+    if (result.changes === 0) {
+      return NextResponse.json(
+        { success: false, error: 'Failed to update testimonial status' },
+        { status: 500 }
+      );
+    }
+    
+    const getStmt = db.prepare('SELECT * FROM testimonials WHERE id = ?');
+    const updatedTestimonial = getStmt.get(parseInt(id));
+    
+    return NextResponse.json({
+      success: true,
+      data: updatedTestimonial,
+      message: `Testimonial ${status} successfully`,
+    });
+    
+  } catch (error) {
+    console.error('Database error:', error);
+    return NextResponse.json(
+      { success: false, error: 'Failed to update testimonial: ' + (error as Error).message },
       { status: 500 }
     );
   }
@@ -167,6 +236,8 @@ export async function DELETE(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
     
+    console.log('🗑️ DELETE request, id:', id);
+    
     if (!id) {
       return NextResponse.json(
         { success: false, error: 'Testimonial ID is required' },
@@ -174,27 +245,38 @@ export async function DELETE(request: NextRequest) {
       );
     }
     
-    const db = new Database(DB_PATH);
+    const db = getDb();
+    
+    // Check if testimonial exists
+    const checkStmt = db.prepare('SELECT * FROM testimonials WHERE id = ?');
+    const existing = checkStmt.get(parseInt(id));
+    
+    if (!existing) {
+      return NextResponse.json(
+        { success: false, error: `Testimonial with ID ${id} not found` },
+        { status: 404 }
+      );
+    }
+    
     const stmt = db.prepare('DELETE FROM testimonials WHERE id = ?');
     const result = stmt.run(parseInt(id));
-    db.close();
     
     if (result.changes === 0) {
       return NextResponse.json(
-        { success: false, error: 'Testimonial not found' },
-        { status: 404 }
+        { success: false, error: 'Failed to delete testimonial' },
+        { status: 500 }
       );
     }
     
     return NextResponse.json({
       success: true,
       message: 'Testimonial deleted successfully',
-    }, { status: 200 });
+    });
     
   } catch (error) {
     console.error('Database error:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to delete testimonial' },
+      { success: false, error: 'Failed to delete testimonial: ' + (error as Error).message },
       { status: 500 }
     );
   }
