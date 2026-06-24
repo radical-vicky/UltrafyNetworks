@@ -5,10 +5,16 @@ import path from 'path';
 
 const DB_PATH = path.join(process.cwd(), 'invest.db');
 
+function getDb() {
+  const db = new Database(DB_PATH);
+  db.pragma('journal_mode = WAL');
+  return db;
+}
+
 function initializeDatabase() {
   try {
     const dbExists = fs.existsSync(DB_PATH);
-    const db = new Database(DB_PATH);
+    const db = getDb();
     
     if (!dbExists) {
       db.exec(`
@@ -117,6 +123,7 @@ export async function GET(request: NextRequest) {
     const featured = searchParams.get('featured');
     const category = searchParams.get('category');
     const status = searchParams.get('status') || 'active';
+    const id = searchParams.get('id');
     
     if (!fs.existsSync(DB_PATH)) {
       return NextResponse.json({
@@ -127,7 +134,30 @@ export async function GET(request: NextRequest) {
       });
     }
     
-    const db = new Database(DB_PATH);
+    const db = getDb();
+    
+    // If specific ID is requested
+    if (id) {
+      const stmt = db.prepare('SELECT * FROM investment_opportunities WHERE id = ?');
+      const result = stmt.get(parseInt(id)) as any;
+      db.close();
+      
+      if (!result) {
+        return NextResponse.json(
+          { success: false, error: 'Investment not found' },
+          { status: 404 }
+        );
+      }
+      
+      return NextResponse.json({
+        success: true,
+        data: {
+          ...result,
+          features: JSON.parse(result.features || '[]')
+        }
+      });
+    }
+    
     let query = 'SELECT * FROM investment_opportunities WHERE 1=1';
     const params: any[] = [];
     
@@ -148,7 +178,7 @@ export async function GET(request: NextRequest) {
     query += ' ORDER BY featured DESC, created_at DESC';
     
     const stmt = db.prepare(query);
-    const result = stmt.all(...params);
+    const result = stmt.all(...params) as any[];
     db.close();
     
     const parsedData = result.map((r: any) => ({
@@ -175,6 +205,8 @@ export async function POST(request: NextRequest) {
     initializeDatabase();
     
     const body = await request.json();
+    console.log('📝 POST request body:', body);
+    
     const { 
       title, description, category, icon, min_investment, 
       expected_return, duration, image, features, featured, status
@@ -182,12 +214,12 @@ export async function POST(request: NextRequest) {
     
     if (!title || !description || !min_investment || !expected_return || !duration) {
       return NextResponse.json(
-        { success: false, error: 'Missing required fields' },
+        { success: false, error: 'Missing required fields: title, description, min_investment, expected_return, duration' },
         { status: 400 }
       );
     }
     
-    const db = new Database(DB_PATH);
+    const db = getDb();
     const stmt = db.prepare(`
       INSERT INTO investment_opportunities (
         title, description, category, icon, min_investment, 
@@ -196,8 +228,8 @@ export async function POST(request: NextRequest) {
     `);
     
     const info = stmt.run(
-      title,
-      description,
+      title.trim(),
+      description.trim(),
       category || 'Infrastructure',
       icon || 'TrendingUp',
       min_investment,
@@ -220,7 +252,7 @@ export async function POST(request: NextRequest) {
         features: JSON.parse(newInvestment.features || '[]')
       },
       message: 'Investment created successfully',
-    });
+    }, { status: 201 });
   } catch (error) {
     console.error('❌ POST error:', error);
     return NextResponse.json(
@@ -261,12 +293,12 @@ export async function PUT(request: NextRequest) {
     
     if (!title || !description || !min_investment || !expected_return || !duration) {
       return NextResponse.json(
-        { success: false, error: 'Missing required fields' },
+        { success: false, error: 'Missing required fields: title, description, min_investment, expected_return, duration' },
         { status: 400 }
       );
     }
     
-    const db = new Database(DB_PATH);
+    const db = getDb();
     
     // Check if investment exists
     const checkStmt = db.prepare('SELECT * FROM investment_opportunities WHERE id = ?');
@@ -297,8 +329,8 @@ export async function PUT(request: NextRequest) {
     `);
     
     const result = stmt.run(
-      title,
-      description,
+      title.trim(),
+      description.trim(),
       category || 'Infrastructure',
       icon || 'TrendingUp',
       min_investment,
@@ -310,6 +342,7 @@ export async function PUT(request: NextRequest) {
       featured ? 1 : 0,
       parseInt(id)
     );
+    
     db.close();
     
     if (result.changes === 0) {
@@ -348,7 +381,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
     
-    const db = new Database(DB_PATH);
+    const db = getDb();
     
     // Check if investment exists
     const checkStmt = db.prepare('SELECT * FROM investment_opportunities WHERE id = ?');
