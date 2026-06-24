@@ -31,21 +31,21 @@ export default function Footer() {
 
           <div className="flex flex-wrap justify-center gap-2 sm:gap-3 relative z-10">
             <a
-              href="https://wa.me/254703199691"
+              href="https://wa.me/254740121382"
               className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white font-medium px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl transition-colors text-sm sm:text-base"
             >
               <MessageCircle className="w-4 h-4" />
               WhatsApp Support
             </a>
             <a
-              href="tel:0700541561"
+              href="tel:0740121382"
               className="flex items-center gap-2 bg-white/10 border border-white/20 hover:bg-white/20 text-white font-medium px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl transition-colors text-sm sm:text-base"
             >
               <Phone className="w-4 h-4 text-emerald-400" />
-              0700 541 561
+              0740121382
             </a>
             <a
-              href="mailto:info@ultrafynetworks.co.ke"
+              href="mailto:info.ultrafynetworks@gmail.com"
               className="flex items-center gap-2 bg-white/10 border border-white/20 hover:bg-white/20 text-white font-medium px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl transition-colors text-sm sm:text-base"
             >
               <Mail className="w-4 h-4 text-emerald-400" />
