@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Database from 'better-sqlite3';
 
-// Use in-memory database for Vercel compatibility
+// Global database instance to persist across requests
 let db: Database.Database | null = null;
 let isInitialized = false;
 
@@ -70,10 +70,14 @@ function initializeDatabase() {
 // GET: Fetch all reviews
 export async function GET() {
   try {
+    console.log('🔍 GET /api/admin/reviews - Starting...');
     initializeDatabase();
     const db = getDb();
+    
     const stmt = db.prepare('SELECT * FROM testimonials ORDER BY created_at DESC');
     const result = stmt.all();
+    
+    console.log(`✅ Found ${result.length} reviews`);
     
     return NextResponse.json({
       success: true,
@@ -92,6 +96,7 @@ export async function GET() {
 // PUT: Update review status
 export async function PUT(request: NextRequest) {
   try {
+    console.log('📝 PUT /api/admin/reviews - Starting...');
     initializeDatabase();
     
     const body = await request.json();
@@ -120,6 +125,7 @@ export async function PUT(request: NextRequest) {
     const existing = checkStmt.get(parseInt(id));
     
     if (!existing) {
+      console.log(`❌ Review with ID ${id} not found`);
       return NextResponse.json(
         { success: false, error: `Review with ID ${id} not found` },
         { status: 404 }
@@ -140,6 +146,8 @@ export async function PUT(request: NextRequest) {
     const getStmt = db.prepare('SELECT * FROM testimonials WHERE id = ?');
     const updatedReview = getStmt.get(parseInt(id));
     
+    console.log(`✅ Review ${id} updated to ${status}`);
+    
     return NextResponse.json({
       success: true,
       data: updatedReview,
@@ -157,6 +165,7 @@ export async function PUT(request: NextRequest) {
 // DELETE: Delete a review
 export async function DELETE(request: NextRequest) {
   try {
+    console.log('🗑️ DELETE /api/admin/reviews - Starting...');
     initializeDatabase();
     
     const { searchParams } = new URL(request.url);
@@ -178,6 +187,7 @@ export async function DELETE(request: NextRequest) {
     const existing = checkStmt.get(parseInt(id));
     
     if (!existing) {
+      console.log(`❌ Review with ID ${id} not found`);
       return NextResponse.json(
         { success: false, error: `Review with ID ${id} not found` },
         { status: 404 }
@@ -193,6 +203,8 @@ export async function DELETE(request: NextRequest) {
         { status: 500 }
       );
     }
+    
+    console.log(`✅ Review ${id} deleted successfully`);
     
     return NextResponse.json({
       success: true,
