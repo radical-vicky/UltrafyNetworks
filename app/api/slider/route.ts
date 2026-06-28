@@ -1,32 +1,46 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Database from 'better-sqlite3';
-import fs from 'fs';
-import path from 'path';
 
-const DB_PATH = path.join(process.cwd(), 'slider.db');
+// Use in-memory database for Vercel compatibility
+let db: Database.Database | null = null;
+let isInitialized = false;
+
+function getDb() {
+  if (!db) {
+    db = new Database(':memory:');
+    db.pragma('journal_mode = WAL');
+  }
+  return db;
+}
 
 function initializeDatabase() {
+  if (isInitialized) return;
+  
   try {
-    const dbExists = fs.existsSync(DB_PATH);
-    const db = new Database(DB_PATH);
+    const db = getDb();
     
-    if (!dbExists) {
-      db.exec(`
-        CREATE TABLE IF NOT EXISTS slides (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          title TEXT NOT NULL,
-          subtitle TEXT NOT NULL,
-          description TEXT NOT NULL,
-          image TEXT NOT NULL,
-          cta_text TEXT DEFAULT 'Learn More',
-          cta_link TEXT DEFAULT '#',
-          badge TEXT DEFAULT 'Featured',
-          status TEXT DEFAULT 'active',
-          display_order INTEGER DEFAULT 0,
-          created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-          updated_at TEXT DEFAULT CURRENT_TIMESTAMP
-        )
-      `);
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS slides (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        subtitle TEXT NOT NULL,
+        description TEXT NOT NULL,
+        image TEXT NOT NULL,
+        cta_text TEXT DEFAULT 'Learn More',
+        cta_link TEXT DEFAULT '#',
+        badge TEXT DEFAULT 'Featured',
+        display_order INTEGER DEFAULT 0,
+        status TEXT DEFAULT 'active',
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    
+    // Check if table has data
+    const countStmt = db.prepare('SELECT COUNT(*) as count FROM slides');
+    const result = countStmt.get() as { count: number };
+    
+    if (result.count === 0) {
+      console.log('📊 Inserting sample slide data...');
       
       const insertStmt = db.prepare(`
         INSERT INTO slides (
@@ -38,45 +52,34 @@ function initializeDatabase() {
         [
           'UltrafyNetworks',
           'Tuko Thika',
-          'Premium fibre internet built for Thika homes and businesses.',
-          'https://images.unsplash.com/photo-1541746972996-4e0b0f43e02a?w=800&h=500&fit=crop',
+          'Premium fibre internet built for Thika homes and businesses. Fast, reliable, and unlimited connectivity.',
+          'https://placehold.co/1920x1080/1a56db/ffffff?text=UltrafyNetworks',
           'Get Connected Now',
           '#contact',
-          'Now live in Thika',
+          'Now Live in Thika',
+          0,
+          'active'
+        ],
+        [
+          'High-Speed Internet',
+          '30 Mbps Plans',
+          'Stream, work, and game with no lag. Choose from our range of packages starting at just KSh 1,000/month.',
+          'https://placehold.co/1920x1080/065f46/ffffff?text=High-Speed+Internet',
+          'View Packages',
+          '#packages',
+          'Exclusive Offer',
           1,
           'active'
         ],
         [
-          'Fibre to the Home',
-          'Lightning Fast Speeds',
-          'Experience the power of true fibre internet with speeds up to 30 Mbps.',
-          'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=800&h=500&fit=crop',
-          'View Packages',
-          '#packages',
-          'Fibre Internet',
-          2,
-          'active'
-        ],
-        [
-          '1 Month Free',
-          'Special Offer',
-          'Sign up today and get your first month absolutely free!',
-          'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=800&h=500&fit=crop',
-          'Claim Offer',
-          '#contact',
-          'Special Offer',
-          3,
-          'active'
-        ],
-        [
-          'UltrafyNetworks',
-          'Connecting Thika',
-          'Join hundreds of satisfied customers across Thika.',
-          'https://images.unsplash.com/photo-1558002038-1055907df827?w=800&h=500&fit=crop',
+          'Solar Energy Solutions',
+          'Power Your Future',
+          'Affordable solar panel installations with battery backup. Save on electricity bills and go green.',
+          'https://placehold.co/1920x1080/92400e/ffffff?text=Solar+Solutions',
           'Learn More',
-          '/services',
-          'Trusted Provider',
-          4,
+          '#contact',
+          'Eco-Friendly',
+          2,
           'active'
         ],
       ];
@@ -88,38 +91,56 @@ function initializeDatabase() {
       });
       
       insertMany(sampleSlides);
-      console.log('✅ Slider database initialized!');
+      console.log('✅ Sample slide data inserted into memory!');
     }
-    db.close();
-    return true;
+    
+    isInitialized = true;
   } catch (error) {
-    console.error('❌ Error initializing slider database:', error);
-    return false;
+    console.error('❌ Error initializing slides database:', error);
   }
 }
 
-// GET: Fetch all slides
+// GET: Fetch slides
 export async function GET(request: NextRequest) {
   try {
     initializeDatabase();
     
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status') || 'active';
+    const id = searchParams.get('id');
     
-    if (!fs.existsSync(DB_PATH)) {
+    const db = getDb();
+    
+    // If specific ID is requested
+    if (id) {
+      const stmt = db.prepare('SELECT * FROM slides WHERE id = ?');
+      const result = stmt.get(parseInt(id));
+      
+      if (!result) {
+        return NextResponse.json(
+          { success: false, error: 'Slide not found' },
+          { status: 404 }
+        );
+      }
+      
       return NextResponse.json({
         success: true,
-        data: [],
-        total: 0,
+        data: result,
       });
     }
     
-    const db = new Database(DB_PATH);
-    const stmt = db.prepare(
-      'SELECT * FROM slides WHERE status = ? ORDER BY display_order ASC, created_at DESC'
-    );
-    const result = stmt.all(status);
-    db.close();
+    let query = 'SELECT * FROM slides WHERE 1=1';
+    const params: any[] = [];
+    
+    if (status && status !== 'all') {
+      query += ' AND status = ?';
+      params.push(status);
+    }
+    
+    query += ' ORDER BY display_order ASC, created_at DESC';
+    
+    const stmt = db.prepare(query);
+    const result = stmt.all(...params);
     
     return NextResponse.json({
       success: true,
@@ -129,7 +150,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error fetching slides:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch slides' },
+      { success: false, error: 'Failed to fetch slides: ' + (error as Error).message },
       { status: 500 }
     );
   }
@@ -141,40 +162,20 @@ export async function POST(request: NextRequest) {
     initializeDatabase();
     
     const body = await request.json();
-    console.log('📥 Received slide data:', {
-      title: body.title,
-      subtitle: body.subtitle,
-      hasImage: !!body.image,
-      imageLength: body.image?.length || 0
-    });
+    console.log('📝 POST request body:', body);
     
     const { 
-      title, 
-      subtitle, 
-      description, 
-      image, 
-      cta_text, 
-      cta_link, 
-      badge, 
-      display_order, 
-      status 
+      title, subtitle, description, image, cta_text, cta_link, badge, display_order, status
     } = body;
     
-    if (!title || !subtitle || !description) {
+    if (!title || !subtitle || !description || !image) {
       return NextResponse.json(
-        { success: false, error: 'Missing required fields' },
+        { success: false, error: 'Missing required fields: title, subtitle, description, image' },
         { status: 400 }
       );
     }
     
-    if (!image) {
-      return NextResponse.json(
-        { success: false, error: 'Image is required' },
-        { status: 400 }
-      );
-    }
-    
-    const db = new Database(DB_PATH);
+    const db = getDb();
     const stmt = db.prepare(`
       INSERT INTO slides (
         title, subtitle, description, image, cta_text, cta_link, badge, display_order, status
@@ -182,9 +183,9 @@ export async function POST(request: NextRequest) {
     `);
     
     const info = stmt.run(
-      title,
-      subtitle,
-      description,
+      title.trim(),
+      subtitle.trim(),
+      description.trim(),
       image,
       cta_text || 'Learn More',
       cta_link || '#',
@@ -195,19 +196,16 @@ export async function POST(request: NextRequest) {
     
     const getStmt = db.prepare('SELECT * FROM slides WHERE id = ?');
     const newSlide = getStmt.get(info.lastInsertRowid);
-    db.close();
-    
-    console.log('✅ Slide created with ID:', info.lastInsertRowid);
     
     return NextResponse.json({
       success: true,
       data: newSlide,
       message: 'Slide created successfully',
-    });
+    }, { status: 201 });
   } catch (error) {
-    console.error('❌ Error creating slide:', error);
+    console.error('Error creating slide:', error);
     return NextResponse.json(
-      { success: false, error: (error as Error).message || 'Failed to create slide' },
+      { success: false, error: 'Failed to create slide: ' + (error as Error).message },
       { status: 500 }
     );
   }
@@ -218,8 +216,14 @@ export async function PUT(request: NextRequest) {
   try {
     initializeDatabase();
     
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
+    const body = await request.json();
+    console.log('📝 PUT request body:', body);
+    
+    const { 
+      id,
+      title, subtitle, description, image, cta_text, cta_link, badge, display_order, status
+    } = body;
+    
     if (!id) {
       return NextResponse.json(
         { success: false, error: 'Slide ID required' },
@@ -227,68 +231,64 @@ export async function PUT(request: NextRequest) {
       );
     }
     
-    const body = await request.json();
-    const { 
-      title, 
-      subtitle, 
-      description, 
-      image, 
-      cta_text, 
-      cta_link, 
-      badge, 
-      display_order, 
-      status 
-    } = body;
+    const db = getDb();
     
-    const db = new Database(DB_PATH);
-    const getStmt = db.prepare('SELECT * FROM slides WHERE id = ?');
-    const existingSlide = getStmt.get(parseInt(id)) as any;
+    // Check if slide exists
+    const checkStmt = db.prepare('SELECT * FROM slides WHERE id = ?');
+    const existing = checkStmt.get(parseInt(id));
     
-    if (!existingSlide) {
-      db.close();
+    if (!existing) {
       return NextResponse.json(
-        { success: false, error: 'Slide not found' },
+        { success: false, error: `Slide with ID ${id} not found` },
         { status: 404 }
       );
     }
     
-    const stmt = db.prepare(`
-      UPDATE slides 
-      SET title = ?, subtitle = ?, description = ?, image = ?, 
-          cta_text = ?, cta_link = ?, badge = ?, display_order = ?, status = ?,
-          updated_at = CURRENT_TIMESTAMP
-      WHERE id = ?
-    `);
+    const updates: string[] = [];
+    const values: any[] = [];
     
-    const result = stmt.run(
-      title || existingSlide.title,
-      subtitle || existingSlide.subtitle,
-      description || existingSlide.description,
-      image || existingSlide.image,
-      cta_text || existingSlide.cta_text,
-      cta_link || existingSlide.cta_link,
-      badge || existingSlide.badge,
-      display_order || existingSlide.display_order,
-      status || existingSlide.status,
-      parseInt(id)
-    );
-    db.close();
+    if (title !== undefined) { updates.push('title = ?'); values.push(title); }
+    if (subtitle !== undefined) { updates.push('subtitle = ?'); values.push(subtitle); }
+    if (description !== undefined) { updates.push('description = ?'); values.push(description); }
+    if (image !== undefined) { updates.push('image = ?'); values.push(image); }
+    if (cta_text !== undefined) { updates.push('cta_text = ?'); values.push(cta_text); }
+    if (cta_link !== undefined) { updates.push('cta_link = ?'); values.push(cta_link); }
+    if (badge !== undefined) { updates.push('badge = ?'); values.push(badge); }
+    if (display_order !== undefined) { updates.push('display_order = ?'); values.push(display_order); }
+    if (status !== undefined) { updates.push('status = ?'); values.push(status); }
+    
+    if (updates.length === 0) {
+      return NextResponse.json(
+        { success: false, error: 'No fields to update' },
+        { status: 400 }
+      );
+    }
+    
+    values.push(parseInt(id));
+    const query = `UPDATE slides SET ${updates.join(', ')} WHERE id = ?`;
+    
+    const stmt = db.prepare(query);
+    const result = stmt.run(...values);
     
     if (result.changes === 0) {
       return NextResponse.json(
-        { success: false, error: 'Slide not found' },
-        { status: 404 }
+        { success: false, error: 'Failed to update slide' },
+        { status: 500 }
       );
     }
     
+    const getStmt = db.prepare('SELECT * FROM slides WHERE id = ?');
+    const updatedSlide = getStmt.get(parseInt(id));
+    
     return NextResponse.json({
       success: true,
+      data: updatedSlide,
       message: 'Slide updated successfully',
     });
   } catch (error) {
     console.error('Error updating slide:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to update slide' },
+      { success: false, error: 'Failed to update slide: ' + (error as Error).message },
       { status: 500 }
     );
   }
@@ -301,6 +301,9 @@ export async function DELETE(request: NextRequest) {
     
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
+    
+    console.log('🗑️ DELETE request, id:', id);
+    
     if (!id) {
       return NextResponse.json(
         { success: false, error: 'Slide ID required' },
@@ -308,15 +311,26 @@ export async function DELETE(request: NextRequest) {
       );
     }
     
-    const db = new Database(DB_PATH);
+    const db = getDb();
+    
+    // Check if slide exists
+    const checkStmt = db.prepare('SELECT * FROM slides WHERE id = ?');
+    const existing = checkStmt.get(parseInt(id));
+    
+    if (!existing) {
+      return NextResponse.json(
+        { success: false, error: `Slide with ID ${id} not found` },
+        { status: 404 }
+      );
+    }
+    
     const stmt = db.prepare('DELETE FROM slides WHERE id = ?');
     const result = stmt.run(parseInt(id));
-    db.close();
     
     if (result.changes === 0) {
       return NextResponse.json(
-        { success: false, error: 'Slide not found' },
-        { status: 404 }
+        { success: false, error: 'Failed to delete slide' },
+        { status: 500 }
       );
     }
     
@@ -327,7 +341,7 @@ export async function DELETE(request: NextRequest) {
   } catch (error) {
     console.error('Error deleting slide:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to delete slide' },
+      { success: false, error: 'Failed to delete slide: ' + (error as Error).message },
       { status: 500 }
     );
   }
